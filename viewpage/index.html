@@ -17,12 +17,10 @@
 
     .slider {
         width: 50%;
-        margin: 100px auto;
+        margin: 200px auto;
     }
 
-    .slick-slide {
-      margin: 0px 20px;
-    }
+    
 
     .slick-slide img {
       width: 100%;
@@ -30,7 +28,7 @@
 
     .slick-prev:before,
     .slick-next:before {
-      color: black;
+      color: rgb(105, 8, 8);
     }
 
 
@@ -51,20 +49,20 @@
 <body>
 
 
-  <section class="lazy slider"  width="100dp" height="800dp">
+  <section class="variable slider" >
     
     <div>
-      <img src="image/1.jpg"  >
+      <img src="image/1.jpg"  width="100dp" height="100dp" >
     </div>
     <div>
-      <img src="image/2.jpg"  >
+      <img src="image/2.jpg"  width="1000dp" height="100dp" >
     </div>
     <div>
-      <img src="image/3.jpg"  >
+      <img src="image/3.jpg"  width="1000dp" height="100dp" >
     </div>
     <div>
       <!-- this slide should inherit the sizes attr from the parent slider -->
-      <img src="image/4.jpg" >
+      <img src="image/4.jpg"  width="1000dp" height="100dp" >
     </div>
   </section>
 
