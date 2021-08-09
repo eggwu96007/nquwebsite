@@ -1,0 +1,240 @@
+export function layout(title, content) {
+  return `
+  <html>
+  <head>
+  
+    <title>${title}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" />
+    <style>
+    
+    body {
+        font-family: Arial, Helvetica, sans-serif;
+        padding: 100px;
+        font: 16px Helvetica, Arial;
+      }
+  
+      h1 {
+        font-size: 2em;
+      }
+
+      h2 {
+        font-size: 1.2em;
+      }
+  
+      #posts {
+        margin: 0;
+        padding: 0;
+      }
+  
+      #posts li {
+        margin: 10px 0;
+        padding: 0;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #eee;
+        list-style: none;
+      }
+  
+      #posts li:last-child {
+        border-bottom: none;
+      }
+  
+      textarea {
+        width: 500px;
+        height: 300px;
+      }
+  
+      input[type=text],input[type=password],
+      textarea {
+        border: 1px solid #eee;
+        border-radius: 2px;
+        padding: 15px;
+        font-size: .8em;
+      }
+  
+      input[type=text],input[type=password] {
+        width: 500px;
+      }
+
+      header{
+        font-size: 50px;
+        font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+         background-color:cyan;
+         margin-top: -80px;
+         text-align: center;
+         height:70px;
+      }
+     
+      article{
+       
+        
+        
+        width:auto;
+        height:auto;
+      }
+      
+    main
+    {
+      
+      height:300px;
+      width:300px;
+    }
+
+      div,ul,li,a,img{margin: 0;padding: 0;}
+      .slider{width: 1988px;margin-left: 250px;margin-top: -300px;;position: relative;height: 900px;overflow: hidden;z-index: 1;}
+      .slider li{list-style: none;position: absolute;left: 30px;top: 50px;z-index: 0;}
+      .slider img{border: none;height: 900px;width:1080px;z-index: 0;}
+      .slider .slider_btn{position: relative;height:25px;width:100%;margin-top:700px;margin-left: 900px;  }
+      .slider .slider_btn span{display: inline-block;width: 15px;height: 15px;line-height: 15px;text-align: center;margin-right: 5px;cursor: pointer;background: #999;color: #FFFFEF;border-radius: 15px;font-size: 12px; z-index:2;}
+
+
+
+    </style>
+  </head>
+ 
+  ${content}
+ 
+  </html>
+  `
+}
+
+export function loginUi(args={})  {
+  //console.log('loginUI')
+  var alertScript
+  if (args.status != null) {
+    console.log('空白')
+    console.log('loginUI:alertScript args=', args)
+    alertScript = `<script>
+    alert('${args.status}')
+    </script>`
+  } else {
+    console.log('沒有空白')
+    console.log('loginUI:no alert')
+    alertScript = ''
+  }
+  console.log('loginUI:beforeLayout')
+  return layout('Login', `
+  <html>
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" />
+  <body>
+
+  <h1>Login</h1>
+  
+  <form action="/login" method="post">
+    <p><input type="text" placeholder="username"  name="username"></p>
+    <p><input type="password" placeholder="password" name="password"></p>
+    <p><input type="submit" value="Login"></p>
+  </form>
+
+  </body>
+  </head>
+  </html>
+${alertScript}
+  `)
+}
+
+export function signupUi(args={}) {
+  console.log('signupUI')
+  var alertScript
+  if (args.status != null) {
+    console.log('signupUI:alertScript args=', args)
+    alertScript = `<script>
+    alert('${args.status}')
+    </script>`
+  } else {
+    console.log('signupUI:no alert')
+    alertScript = ''
+  }
+  return layout('Signup',` 
+  <h1>Signup</h1>
+  <form action="/signup" method="post">
+    <p><input type="text" placeholder="username" name="username"></p>
+    <p><input type="password" placeholder="password" name="password"></p>
+    <p><input type="text" placeholder="email" name="email"></p>
+    <p><input type="submit" value="Signup"></p>
+  </form>
+  ${alertScript}
+  `
+  
+  )
+}
+
+export function success() {
+  return layout('Success', `
+  <h1>Success!</h1>
+  You may <a href="/">read all Post</a> again !
+  `)
+}
+
+export function fail() {
+  return layout('Fail', `
+  <h1>Fail!</h1>
+  You may <a href="/">read all Post</a> or <a href="JavaScript:window.history.back()">go back</a> !
+  `)
+}
+
+export function list(posts, user) {
+  console.log('list: user=', user)
+  let list = []
+  
+  for (let post of posts) {
+    
+    list.push(`
+    <li style="border-color: crimson">
+    </li>
+    <li style="border-color: crimson"><h2>${ post.title } -- by ${post.username}</h2>
+      <p>${post.body}</p>
+      <p><a href="/post/${post.id}">Read post</a></p></li>
+    `)
+  }
+  let content = `
+  <body>
+  
+  <header style="text-align: left;">
+  
+  </header>
+
+  <article>
+  <p style="border: crimson;font-size: 30px; border-top: 100px; ">${(user==null)?'':'歡迎 '+user.username+''}</p>
+  
+  <ul id="posts">
+    ${list.join('\n')}
+  </ul>
+  </article>
+  </body>
+  `
+  return layout('Posts', content)
+}
+
+
+export function newPost() {
+  return layout('New Post', `
+  <h1>New Post</h1>
+  <p>Create a new post.</p>
+  <form action="/post" method="post">
+    <p><input type="text" placeholder="Title" name="title"></p>
+    <p><textarea placeholder="Contents" name="body"></textarea></p>
+    <p><input type="submit" value="Create"></p>
+    <p><input type="file"  accept="image/*"/>
+  </form>
+  `)
+}
+
+
+export function show(post) {
+  return layout(post.title, `
+  <html>
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" />
+  <body>
+
+    <h1>${post.title} -- by ${post.username}</h1>
+    <p>${post.body}</p>
+  </body>
+  </head>
+  </html>
+  `)
+}
