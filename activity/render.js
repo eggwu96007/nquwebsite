@@ -123,8 +123,8 @@ export function loginUi(args={})  {
   <h1>Login</h1>
   
   <form action="/login" method="post">
-    <p><input type="text" placeholder="username"  name="username"></p>
-    <p><input type="password" placeholder="password" name="password"></p>
+    <p><input type="text" placeholder="username"  name="username" style="width:auto;"></p>
+    <p><input type="password" placeholder="password" name="password" style = "width:auto;"></p>
     <p><input type="submit" value="Login"></p>
   </form>
 
