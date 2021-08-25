@@ -24,6 +24,7 @@ router.get('/', list)
   .get('/post/new', add)
   .get('/post/:id', show)
   .post('/post', create)
+  .get('/delpost/:id',delpost)
 
 
 const app = new Application();
@@ -62,6 +63,7 @@ function postQuery(sql) {
   let list = []
   for (const [id, username, title, body] of sqlcmd(sql)) {
     list.push({id, username, title, body})
+    
   }
   console.log('postQuery: list=', list)
   return list
@@ -117,15 +119,19 @@ async function login(ctx) {
     var user = await parseFormBody(body)
     var dbUsers = userQuery(`SELECT id, username, password, email FROM users WHERE username='${user.username}'`) // userMap[user.username]
     var dbUser = dbUsers[0]
+    
+    console.log('看戲:帳號',dbUser)
     if (dbUser != null && dbUser.password === user.password ) {
       ctx.state.session.set('user', user)
       console.log('session.user=', await ctx.state.session.get('user'))
       ctx.response.redirect('/');
     }
-    else if(dbUser==null)
+
+    else if(user.username==''&&user.password=='')
     {
-      ctx.response.body = render.loginUi({status:'不可空白'})
+      ctx.response.body = render.loginUi({status:'請輸入帳號密碼'})
     } 
+
     else {
       ctx.response.body = render.loginUi({status:'帳號或密碼錯誤'})
       //ctx.response.body = render.fail()
@@ -149,6 +155,7 @@ async function list(ctx) {
   /*ctx.response.body = await render.list(posts);*/
 }
 
+
 /*
 async function list(ctx) {
   let posts = postQuery("SELECT id, username, title, body FROM posts")
@@ -165,11 +172,24 @@ async function add(ctx) {
   }
 }
 
+async function delpost(ctx) {
+  //sqlcmd(`DELETE FROM posts WHERE username='${eggwu96007}'`) // userMap[user.username] 
+  //const delid=;
+  const pid = ctx.params.id;
+  console.log('第一個')
+  console.log('第一個=',pid)
+  postQuery(`DELETE FROM posts WHERE id='${pid}'`)
+  ctx.response.redirect('/');
+  
+}
+
 async function show(ctx) {
   const pid = ctx.params.id;
+  console.log('要確定餒',pid)
   let posts = postQuery(`SELECT id, username, title, body FROM posts WHERE id=${pid}`)
+  
   let post = posts[0]
-  console.log('show:post=', post)
+  console.log('show:post=', post)//
   if (!post) ctx.throw(404, 'invalid post id');
   ctx.response.body = await render.show(post);
 }
@@ -183,12 +203,13 @@ async function create(ctx) {
     if (user != null) {
       console.log('user=', user)
       sqlcmd("INSERT INTO posts (username, title, body) VALUES (?, ?, ?)", [user.username, post.title, post.body]);  
-    } else {
+    } 
+    else {
       ctx.throw(404, 'not login yet!');
     }
     ctx.response.redirect('/');
   }
 }
 
-console.log('Server run at http://172.105.238.90/login')
-await app.listen({ port: 7999 });
+console.log('Server run at http://127.0.0.1:8000/login')
+await app.listen({ port: 8000 });

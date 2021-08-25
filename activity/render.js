@@ -66,9 +66,6 @@ export function layout(title, content) {
       }
      
       article{
-       
-        
-        
         width:auto;
         height:auto;
       }
@@ -79,16 +76,7 @@ export function layout(title, content) {
       height:300px;
       width:300px;
     }
-
-      div,ul,li,a,img{margin: 0;padding: 0;}
-      .slider{width: 1988px;margin-left: 250px;margin-top: -300px;;position: relative;height: 900px;overflow: hidden;z-index: 1;}
-      .slider li{list-style: none;position: absolute;left: 30px;top: 50px;z-index: 0;}
-      .slider img{border: none;height: 900px;width:1080px;z-index: 0;}
-      .slider .slider_btn{position: relative;height:25px;width:100%;margin-top:700px;margin-left: 900px;  }
-      .slider .slider_btn span{display: inline-block;width: 15px;height: 15px;line-height: 15px;text-align: center;margin-right: 5px;cursor: pointer;background: #999;color: #FFFFEF;border-radius: 15px;font-size: 12px; z-index:2;}
-
-
-
+    
     </style>
   </head>
  
@@ -97,16 +85,16 @@ export function layout(title, content) {
   </html>
   `
 }
-
+//alert('${args.status}')
 export function loginUi(args={})  {
   //console.log('loginUI')
   var alertScript
   if (args.status != null) {
     console.log('空白')
     console.log('loginUI:alertScript args=', args)
-    alertScript = `<script>
-    alert('${args.status}')
-    </script>`
+    alertScript = `<p>
+    帳號或密碼有誤
+    <p>`
   } else {
     console.log('沒有空白')
     console.log('loginUI:no alert')
@@ -120,18 +108,18 @@ export function loginUi(args={})  {
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" />
   <body>
 
-  <h1>Login</h1>
+  <h1>登入</h1>
   
   <form action="/login" method="post">
-    <p><input type="text" placeholder="username"  name="username" style="width:auto;"></p>
-    <p><input type="password" placeholder="password" name="password" style = "width:auto;"></p>
-    <p><input type="submit" value="Login"></p>
+    <p><input type="text" placeholder="社團帳號"  name="username" style="width:auto;"></p>
+    <p><input type="password" placeholder="密碼" name="password" style = "width:auto;"></p>
+    <p><input type="submit" value="登入"></p>
   </form>
-
+ <p>${alertScript}</p>
   </body>
   </head>
   </html>
-${alertScript}
+
   `)
 }
 
@@ -184,21 +172,15 @@ export function list(posts, user) {
     list.push(`
     <li style="border-color: crimson">
     </li>
-    <li style="border-color: crimson"><h2>${ post.title } -- by ${post.username}</h2>
+    <li style="border-color: crimson"><h2>${ post.title } -- by ${post.username}<a href="/delpost/${post.id}">編輯貼文</a></h2>
       <p>${post.body}</p>
       <p><a href="/post/${post.id}">Read post</a></p></li>
     `)
   }
   let content = `
   <body>
-  
-  <header style="text-align: left;">
-  
-  </header>
-
   <article>
-  <p style="border: crimson;font-size: 30px; border-top: 100px; ">${(user==null)?'':'歡迎 '+user.username+''}</p>
-  
+  <p style="border: crimson;font-size: 30px; border-top: 100px; ">${(user==null)?'':'歡迎 '+user.username+''}<a href="/post/new">創立貼文</a></p>
   <ul id="posts">
     ${list.join('\n')}
   </ul>
