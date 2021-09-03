@@ -25,6 +25,8 @@ router.get('/', list)
   .get('/post/:id', show)
   .post('/post', create)
   .get('/delpost/:id',delpost)
+  .get('/editpost/:id',editpostui)
+  .post('/:id',editpost)
 
 
 const app = new Application();
@@ -93,6 +95,8 @@ async function signupUi(ctx) {
   ctx.response.body = await render.signupUi();
 }
 
+
+
 async function signup(ctx) {
   const body = ctx.request.body()
   console.log('dangerous')
@@ -110,8 +114,11 @@ async function signup(ctx) {
 }
 
 async function loginUi(ctx) {
+  
   ctx.response.body = await render.loginUi();
 }
+
+
 
 async function login(ctx) {
   const body = ctx.request.body()
@@ -180,19 +187,53 @@ async function delpost(ctx) {
   console.log('第一個=',pid)
   postQuery(`DELETE FROM posts WHERE id='${pid}'`)
   ctx.response.redirect('/');
-  
 }
 
-async function show(ctx) {
+
+async function editpostui(ctx) {
   const pid = ctx.params.id;
-  console.log('要確定餒',pid)
+  console.log('要確定餒也不確定',pid)
   let posts = postQuery(`SELECT id, username, title, body FROM posts WHERE id=${pid}`)
-  
   let post = posts[0]
-  console.log('show:post=', post)//
+  console.log('show:post=', post)
   if (!post) ctx.throw(404, 'invalid post id');
-  ctx.response.body = await render.show(post);
+  ctx.response.body = await render.editpostui(post);
+
+
+
+  
+  
+  /*const pid = ctx.params.id;
+ 
+ctx.response.redirect('/');*/
 }
+async function editpost(ctx) {
+  /*const pid = ctx.params.id;
+  //const dd = ctx.params.title;
+  postQuery(`SELECT id, username, title, body FROM posts WHERE id=${pid}`)
+  console.log('應該是有跑到這裡吧',posts.title)
+  console.log('應該是有跑到這裡吧????',pid)
+  sqlcmd(`UPDATE posts SET title='${posts.title}' WHERE id='${pid}';`)
+  ctx.response.redirect('/');*/
+  const pid = ctx.params.id;
+  console.log('應該是有跑到這裡吧????',pid)
+  const body = ctx.request.body()
+  if (body.type === "form") {
+    var post = await parseFormBody(body)
+    console.log('create:post=', post)
+    var user = await ctx.state.session.get('user')
+    if (user != null) {
+      console.log('user=', user)
+      console.log('應該是有跑到這裡ㄚㄚㄚ????',pid)
+      sqlcmd(`UPDATE posts SET "title"='${post.title}',"body"='${post.body}' WHERE id='${pid}';`)
+    } 
+    else {
+      ctx.throw(404, 'not login yet!');
+    }
+    ctx.response.redirect('/');
+  }
+}
+
 
 async function create(ctx) {
   const body = ctx.request.body()
@@ -202,7 +243,7 @@ async function create(ctx) {
     var user = await ctx.state.session.get('user')
     if (user != null) {
       console.log('user=', user)
-      sqlcmd("INSERT INTO posts (username, title, body) VALUES (?, ?, ?)", [user.username, post.title, post.body]);  
+      sqlcmd("INSERT INTO posts (username, title, body) VALUES (?, ?, ?)", [user.username, post.title, post.body]);
     } 
     else {
       ctx.throw(404, 'not login yet!');
@@ -210,6 +251,18 @@ async function create(ctx) {
     ctx.response.redirect('/');
   }
 }
+
+async function show(ctx) {
+  const pid = ctx.params.id;
+  console.log('要確定餒',pid)
+  let posts = postQuery(`SELECT id, username, title, body FROM posts WHERE id=${pid}`)
+  let post = posts[0]
+  console.log('show:post=', post)//
+  if (!post) ctx.throw(404, 'invalid post id');
+  ctx.response.body = await render.show(post);
+}
+
+
 
 console.log('Server run at http://127.0.0.1:8000/login')
 await app.listen({ port: 8000 });

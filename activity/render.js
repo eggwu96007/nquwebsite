@@ -92,9 +92,7 @@ export function loginUi(args={})  {
   if (args.status != null) {
     console.log('空白')
     console.log('loginUI:alertScript args=', args)
-    alertScript = `<p>
-    帳號或密碼有誤
-    <p>`
+    alertScript = `<p>帳號或密碼有誤<p>`
   } else {
     console.log('沒有空白')
     console.log('loginUI:no alert')
@@ -113,6 +111,7 @@ export function loginUi(args={})  {
   <form action="/login" method="post">
     <p><input type="text" placeholder="社團帳號"  name="username" style="width:auto;"></p>
     <p><input type="password" placeholder="密碼" name="password" style = "width:auto;"></p>
+    
     <p><input type="submit" value="登入"></p>
   </form>
  <p>${alertScript}</p>
@@ -164,7 +163,7 @@ export function fail() {
 }
 
 export function list(posts, user) {
-  console.log('list: user=', user)
+  console.log('listing: user=', user)
   let list = []
   
   for (let post of posts) {
@@ -172,7 +171,8 @@ export function list(posts, user) {
     list.push(`
     <li style="border-color: crimson">
     </li>
-    <li style="border-color: crimson"><h2>${ post.title } -- by ${post.username}<a href="/delpost/${post.id}">編輯貼文</a></h2>
+    <li style="border-color: crimson"><h2>${ post.title } -- by ${post.username}<a href="/delpost/${post.id}">刪除貼文</a><a href="/editpost/${post.id}">編輯貼文</a><a href="https://calndr.link/d/event/?service=apple&start=2021-09-25 01:05&end=2020-09-26 01:05&title=test&timezone=+2503+12130">Add to Calendar</a></h2>
+    
       <p>${post.body}</p>
       <p><a href="/post/${post.id}">Read post</a></p></li>
     `)
@@ -204,6 +204,20 @@ export function newPost() {
   `)
 }
 
+export function editpostui(post) {
+  return layout(post.title, `
+  <h1>編輯中${post.id}</h1>
+  <p>Create a new post.</p>
+  <form action="/${post.id}" method="post">
+  <p><input type="text" placeholder="Title" name="title" value="${post.title}"></p>
+  <p><textarea placeholder="Contents" name="body" rows="6" cols="40">${post.body}</textarea></p>
+    <p><input type="submit" value="Create"></p>
+    <p><input type="file"  accept="image/*"/>
+  </form>
+  `)
+}
+//<p><input type="text" placeholder="Title" name="title" value="${post.title}"></p>
+    //<p><textarea placeholder="Contents" name="body" >${post.body}</textarea></p>
 
 export function show(post) {
   return layout(post.title, `
