@@ -2,9 +2,11 @@ import { Application, Router,send } from "https://deno.land/x/oak/mod.ts";
 import * as render from './render.js'
 import { DB } from "https://deno.land/x/sqlite/mod.ts";
 import { Session } from "https://deno.land/x/session@1.1.0/mod.ts";
+import { multiParser} from 'https://deno.land/x/multiparser@v2.1.0/mod.ts'
+import { oakCors } from "https://deno.land/x/cors/mod.ts";
 
 const db = new DB("blog.db");
-db.query("CREATE TABLE IF NOT EXISTS posts (id INTEGER PRIMARY KEY AUTOINCREMENT,title TEXT, username TEXT,  body TEXT)");
+db.query("CREATE TABLE IF NOT EXISTS posts (id INTEGER PRIMARY KEY AUTOINCREMENT,title TEXT, username TEXT,  body TEXT, file TEXT)");
 db.query("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT, email TEXT)");
 /*
 const userMap = {
@@ -27,7 +29,7 @@ router.get('/', list)
   .get('/delpost/:id',delpost)
   .get('/editpost/:id',editpostui)
   .post('/:id',editpost)
-
+  
 
 const app = new Application();
 
@@ -36,11 +38,12 @@ await session.init();
 app.use(session.use()(session));
 app.use(router.routes());
 app.use(router.allowedMethods());
+app.use(oakCors());
 
 
 app.use(async (ctx) => {
   console.log('path=', ctx.request.url.pathname)
-  if (ctx.request.url.pathname.startsWith("/public/")) {
+  if (ctx.request.url.pathname.startsWith("/images")) {
     console.log('pass:', ctx.request.url.pathname)
     await send(ctx, ctx.request.url.pathname, {
       root: Deno.cwd(),
@@ -63,8 +66,8 @@ function sqlcmd(sql, arg1) {
 
 function postQuery(sql) {
   let list = []
-  for (const [id, username, title, body] of sqlcmd(sql)) {
-    list.push({id, username, title, body})
+  for (const [id, username, title, body,file] of sqlcmd(sql)) {
+    list.push({id, username, title, body,file})
     
   }
   console.log('postQuery: list=', list)
@@ -90,7 +93,7 @@ async function parseFormBody(body) {
   }
   return obj
 }
-
+/*從這裡開始*/
 async function signupUi(ctx) {
   ctx.response.body = await render.signupUi();
 }
@@ -108,8 +111,6 @@ async function signup(ctx) {
       ctx.response.body = render.loginUi({status:'帳號創立成功，請重新登入'})
     } else
     ctx.response.body = render.signupUi({status:'帳號已被創立'})
-    console.log('ggggg')
-      //ctx.response.body = render.fail()
   }
 }
 
@@ -141,7 +142,6 @@ async function login(ctx) {
 
     else {
       ctx.response.body = render.loginUi({status:'帳號或密碼錯誤'})
-      //ctx.response.body = render.fail()
     }
   }
 }
@@ -156,20 +156,13 @@ async function list(ctx) {
   orderby = orderby || 'id'
   let op = ctx.request.url.searchParams.get('op')
   op = op || 'ASC'
-  let posts = postQuery(`SELECT id,username, title, body FROM posts ORDER BY ${orderby} ${op}`)
-  console.log('list:posts=', posts)
-  ctx.response.body = await render.list(posts, await ctx.state.session.get('user'));
-  /*ctx.response.body = await render.list(posts);*/
-}
-
-
-/*
-async function list(ctx) {
-  let posts = postQuery("SELECT id, username, title, body FROM posts")
+  let posts = postQuery(`SELECT id,username, title, body ,file FROM posts ORDER BY ${orderby} ${op}`)
   console.log('list:posts=', posts)
   ctx.response.body = await render.list(posts, await ctx.state.session.get('user'));
 }
-*/
+
+
+
 async function add(ctx) {
   var user = await ctx.state.session.get('user')
   if (user != null) {
@@ -180,8 +173,6 @@ async function add(ctx) {
 }
 
 async function delpost(ctx) {
-  //sqlcmd(`DELETE FROM posts WHERE username='${eggwu96007}'`) // userMap[user.username] 
-  //const delid=;
   const pid = ctx.params.id;
   console.log('第一個')
   console.log('第一個=',pid)
@@ -193,30 +184,28 @@ async function delpost(ctx) {
 async function editpostui(ctx) {
   const pid = ctx.params.id;
   console.log('要確定餒也不確定',pid)
-  let posts = postQuery(`SELECT id, username, title, body FROM posts WHERE id=${pid}`)
+  let posts = postQuery(`SELECT id, username, title, body,file FROM posts WHERE id=${pid}`)
   let post = posts[0]
   console.log('show:post=', post)
   if (!post) ctx.throw(404, 'invalid post id');
   ctx.response.body = await render.editpostui(post);
 
-
-
-  
-  
-  /*const pid = ctx.params.id;
- 
-ctx.response.redirect('/');*/
 }
 async function editpost(ctx) {
-  /*const pid = ctx.params.id;
-  //const dd = ctx.params.title;
-  postQuery(`SELECT id, username, title, body FROM posts WHERE id=${pid}`)
-  console.log('應該是有跑到這裡吧',posts.title)
-  console.log('應該是有跑到這裡吧????',pid)
-  sqlcmd(`UPDATE posts SET title='${posts.title}' WHERE id='${pid}';`)
-  ctx.response.redirect('/');*/
+  const path = ctx.request.url.pathname;
+  if (path == '/upload') {
+    const form = await multiParser(ctx.request.serverRequest)
+    console.log('GG')
+    if (form) {
+    
+      const image = form.files.image 
+      await Deno.writeFile(`images/${image.filename}`, image.content);
+      console.log(image.filename)
+    }
+    else
+    ctx.response.body = '{"status": "ok"}';
+  }
   const pid = ctx.params.id;
-  console.log('應該是有跑到這裡吧????',pid)
   const body = ctx.request.body()
   if (body.type === "form") {
     var post = await parseFormBody(body)
@@ -224,8 +213,7 @@ async function editpost(ctx) {
     var user = await ctx.state.session.get('user')
     if (user != null) {
       console.log('user=', user)
-      console.log('應該是有跑到這裡ㄚㄚㄚ????',pid)
-      sqlcmd(`UPDATE posts SET "title"='${post.title}',"body"='${post.body}' WHERE id='${pid}';`)
+      sqlcmd(`UPDATE posts SET "title"='${post.title}',"body"='${post.body}',"file"='${post.file}' WHERE id='${pid}';`)
     } 
     else {
       ctx.throw(404, 'not login yet!');
@@ -243,7 +231,7 @@ async function create(ctx) {
     var user = await ctx.state.session.get('user')
     if (user != null) {
       console.log('user=', user)
-      sqlcmd("INSERT INTO posts (username, title, body) VALUES (?, ?, ?)", [user.username, post.title, post.body]);
+      sqlcmd("INSERT INTO posts (username, title, body,file) VALUES (?, ?, ?,?)", [user.username, post.title, post.body,post.file]);
     } 
     else {
       ctx.throw(404, 'not login yet!');
@@ -254,15 +242,13 @@ async function create(ctx) {
 
 async function show(ctx) {
   const pid = ctx.params.id;
-  console.log('要確定餒',pid)
-  let posts = postQuery(`SELECT id, username, title, body FROM posts WHERE id=${pid}`)
+  let posts = postQuery(`SELECT id, username, title, body,file FROM posts WHERE id=${pid}`)
   let post = posts[0]
-  console.log('show:post=', post)//
   if (!post) ctx.throw(404, 'invalid post id');
   ctx.response.body = await render.show(post);
 }
 
 
 
-console.log('Server run at http://127.0.0.1:8000/login')
+console.log('Server run at http://172.105.238.90:8000/login')
 await app.listen({ port: 8000 });

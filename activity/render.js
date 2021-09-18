@@ -139,7 +139,7 @@ export function signupUi(args={}) {
   <form action="/signup" method="post">
     <p><input type="text" placeholder="username" name="username"></p>
     <p><input type="password" placeholder="password" name="password"></p>
-    <p><input type="text" placeholder="email" name="email"></p>
+    <p><input type="text" placeholder="email" name="社團名稱"></p>
     <p><input type="submit" value="Signup"></p>
   </form>
   ${alertScript}
@@ -171,9 +171,11 @@ export function list(posts, user) {
     list.push(`
     <li style="border-color: crimson">
     </li>
-    <li style="border-color: crimson"><h2>${ post.title } -- by ${post.username}<a href="/delpost/${post.id}">刪除貼文</a><a href="/editpost/${post.id}">編輯貼文</a><a href="https://calndr.link/d/event/?service=apple&start=2021-09-25 01:05&end=2020-09-26 01:05&title=test&timezone=+2503+12130">Add to Calendar</a></h2>
+    <li style="border-color: crimson"><h2>${ post.title } -- by ${post.username}<a href="/delpost/${post.id}">刪除貼文</a><a href="/editpost/${post.id}">編輯貼文</a></h2>
     
       <p>${post.body}</p>
+      <p>${post.file}</p>
+      <img src="images/${post.file}"/>
       <p><a href="/post/${post.id}">Read post</a></p></li>
     `)
   }
@@ -192,32 +194,164 @@ export function list(posts, user) {
 
 
 export function newPost() {
-  return layout('New Post', `
-  <h1>New Post</h1>
-  <p>Create a new post.</p>
-  <form action="/post" method="post">
-    <p><input type="text" placeholder="Title" name="title"></p>
-    <p><textarea placeholder="Contents" name="body"></textarea></p>
-    <p><input type="submit" value="Create"></p>
-    <p><input type="file"  accept="image/*"/>
-  </form>
-  `)
+  
+  return layout('New Post',
+ 
+  `    
+  <script>
+  async function post(canvas, name) {
+   
+    canvas.toBlob(async function(blob) {
+      const formData = new FormData();
+      formData.append('image', blob, name);
+      fetch('http://172.105.238.90:8000/upload', {
+        mode: 'no-cors',
+        method: 'POST',
+        body: formData
+      });
+    });
+  }
+  
+  function loadImage() {
+    let img;
+  
+    const input = document.getElementById('imgfile');
+    if (!input.files[0]) {
+        alert("Please select a file before clicking 'Load'");
+        return;
+    }
+  
+    const file = input.files[0];
+    const fr = new FileReader();
+    fr.onload = createImage;
+    fr.readAsDataURL(file);
+  
+    function createImage() {
+        img = new Image();
+        img.onload = imageLoaded;
+        img.src = fr.result;
+    }
+  
+    function imageLoaded() {
+        const canvas = document.getElementById("canvas")
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img,0,0);
+    }
+  
+  }
+  
+  async function upload() {
+    const canvas = document.getElementById("canvas");
+    const input = document.getElementById('imgfile');
+    post(canvas, input.files[0].name);
+    
+    
+  
+    
+  }
+  
+ 
+  </script>
+
+  <body>
+    <h1>新貼文</h1>
+    <p>Create a new post.</p>
+    <form action="/post" method="post">
+      <p><input type="text" placeholder="Title" name="title"></p>
+      <p><textarea placeholder="Contents" name="body"></textarea></p>
+      <p><input type="submit" value="Create"></p>
+      <img src="" alt="" name="image">
+    <input type="file" name="file" id="imgfile" onchange="loadImage()">
+    <input type='button' id='btnLoad' value='Upload' onclick="upload()" />
+    <canvas id="canvas"></canvas>
+     
+    </form>
+    
+  </body>
+
+
+  `
+  )
 }
+
 
 export function editpostui(post) {
   return layout(post.title, `
+  <script>
+  async function post(canvas, name) {
+  
+   
+    canvas.toBlob(async function(blob) {
+      const formData = new FormData();
+      formData.append('image', blob, name);
+      fetch('http://172.105.238.90:8000/upload', {
+        mode: 'no-cors',
+        method: 'POST',
+        body: formData
+      });
+    });
+  }
+  
+  function loadImage() {
+    let img;
+  
+    const input = document.getElementById('imgfile');
+    if (!input.files[0]) {
+        alert("Please select a file before clicking 'Load'");
+        return;
+    }
+  
+    const file = input.files[0];
+    const fr = new FileReader();
+    fr.onload = createImage;
+    fr.readAsDataURL(file);
+  
+    function createImage() {
+        img = new Image();
+        img.onload = imageLoaded;
+        img.src = fr.result;
+    }
+  
+    function imageLoaded() {
+        const canvas = document.getElementById("canvas")
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img,0,0);
+    }
+  
+  }
+  
+  async function upload() {
+    const canvas = document.getElementById("canvas");
+    const input = document.getElementById('imgfile');
+    post(canvas, input.files[0].name);
+  
+    
+  }
+  
+ 
+  </script>
+<body>
   <h1>編輯中${post.id}</h1>
   <p>Create a new post.</p>
   <form action="/${post.id}" method="post">
   <p><input type="text" placeholder="Title" name="title" value="${post.title}"></p>
   <p><textarea placeholder="Contents" name="body" rows="6" cols="40">${post.body}</textarea></p>
     <p><input type="submit" value="Create"></p>
-    <p><input type="file"  accept="image/*"/>
+    <img src="" alt="" name="image">
+  <input type="file" name="file" id="imgfile" onchange="loadImage()">
+  <input type='button' id='btnLoad' value='Upload' onclick="upload()" />
+  <canvas id="canvas"></canvas>
   </form>
+  
+
+  </body>
   `)
 }
-//<p><input type="text" placeholder="Title" name="title" value="${post.title}"></p>
-    //<p><textarea placeholder="Contents" name="body" >${post.body}</textarea></p>
+
 
 export function show(post) {
   return layout(post.title, `
@@ -229,6 +363,8 @@ export function show(post) {
 
     <h1>${post.title} -- by ${post.username}</h1>
     <p>${post.body}</p>
+
+    
   </body>
   </head>
   </html>
