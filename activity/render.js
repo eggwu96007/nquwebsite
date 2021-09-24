@@ -204,7 +204,7 @@ export function newPost() {
     canvas.toBlob(async function(blob) {
       const formData = new FormData();
       formData.append('image', blob, name);
-      fetch('http://172.105.238.90:8000/upload', {
+      fetch('http://127.0.0.1:8000/upload', {
         mode: 'no-cors',
         method: 'POST',
         body: formData
@@ -286,7 +286,7 @@ export function editpostui(post) {
     canvas.toBlob(async function(blob) {
       const formData = new FormData();
       formData.append('image', blob, name);
-      fetch('http://172.105.238.90:8000/upload', {
+      fetch('/upload', {
         mode: 'no-cors',
         method: 'POST',
         body: formData
