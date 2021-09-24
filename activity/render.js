@@ -198,74 +198,14 @@ export function newPost() {
   return layout('New Post',
  
   `    
-  <script>
-  async function post(canvas, name) {
-   
-    canvas.toBlob(async function(blob) {
-      const formData = new FormData();
-      formData.append('image', blob, name);
-      fetch('/upload', {
-        mode: 'no-cors',
-        method: 'POST',
-        body: formData
-      });
-    });
-  }
-  
-  function loadImage() {
-    let img;
-  
-    const input = document.getElementById('imgfile');
-    if (!input.files[0]) {
-        alert("Please select a file before clicking 'Load'");
-        return;
-    }
-  
-    const file = input.files[0];
-    const fr = new FileReader();
-    fr.onload = createImage;
-    fr.readAsDataURL(file);
-  
-    function createImage() {
-        img = new Image();
-        img.onload = imageLoaded;
-        img.src = fr.result;
-    }
-  
-    function imageLoaded() {
-        const canvas = document.getElementById("canvas")
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img,0,0);
-    }
-  
-  }
-  
-  async function upload() {
-    const canvas = document.getElementById("canvas");
-    const input = document.getElementById('imgfile');
-    post(canvas, input.files[0].name);
-    
-    
-  
-    
-  }
-  
- 
-  </script>
-
   <body>
     <h1>新貼文</h1>
     <p>Create a new post.</p>
-    <form action="/post" method="post">
+    <form action="/post" enctype="multipart/form-data" method="post" >
       <p><input type="text" placeholder="Title" name="title"></p>
       <p><textarea placeholder="Contents" name="body"></textarea></p>
+      <div>singleImg: <input type="file" name="file"/></div>
       <p><input type="submit" value="Create"></p>
-      <img src="" alt="" name="image">
-    <input type="file" name="file" id="imgfile" onchange="loadImage()">
-    <input type='button' id='btnLoad' value='Upload' onclick="upload()" />
-    <canvas id="canvas"></canvas>
      
     </form>
     
@@ -277,63 +217,29 @@ export function newPost() {
 }
 
 
+export function newphoto() {
+  
+  return layout('New photo',
+ 
+  `    
+  <html>
+  <body>
+  <h3>Deno http module</h3>
+  <form action="/upload" enctype="multipart/form-data" method="post">
+    <div>singleImg: <input type="file" name="singleImg"/></div>
+    <input type="submit" value="Upload" />
+  </form>
+  </body>
+  </html>
+
+
+  `
+  )
+}
+
 export function editpostui(post) {
   return layout(post.title, `
-  <script>
-  async function post(canvas, name) {
-  
-   
-    canvas.toBlob(async function(blob) {
-      const formData = new FormData();
-      formData.append('image', blob, name);
-      fetch('/upload', {
-        mode: 'no-cors',
-        method: 'POST',
-        body: formData
-      });
-    });
-  }
-  
-  function loadImage() {
-    let img;
-  
-    const input = document.getElementById('imgfile');
-    if (!input.files[0]) {
-        alert("Please select a file before clicking 'Load'");
-        return;
-    }
-  
-    const file = input.files[0];
-    const fr = new FileReader();
-    fr.onload = createImage;
-    fr.readAsDataURL(file);
-  
-    function createImage() {
-        img = new Image();
-        img.onload = imageLoaded;
-        img.src = fr.result;
-    }
-  
-    function imageLoaded() {
-        const canvas = document.getElementById("canvas")
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img,0,0);
-    }
-  
-  }
-  
-  async function upload() {
-    const canvas = document.getElementById("canvas");
-    const input = document.getElementById('imgfile');
-    post(canvas, input.files[0].name);
-  
-    
-  }
-  
  
-  </script>
 <body>
   <h1>編輯中${post.id}</h1>
   <p>Create a new post.</p>

@@ -18,6 +18,7 @@ const userMap = {
 const router = new Router();
 
 router.get('/', list)
+  //.post('/upload', upload)
   .get('/signup', signupUi)
   .post('/signup', signup)
   .get('/login', loginUi)
@@ -224,20 +225,39 @@ async function editpost(ctx) {
 
 
 async function create(ctx) {
+  console.log("看1")
   const body = ctx.request.body()
-  if (body.type === "form") {
-    var post = await parseFormBody(body)
-    console.log('create:post=', post)
+  console.log("感覺有橘了",body)
+  console.log("看2")
+  const form = await multiParser(ctx.request.serverRequest)
+  console.log(form)
+ // if (body.type === "form") {
+    console.log("看3")
+    
+    console.log("看4")
+    console.log(form)
+    if (form) {
+      console.log("看5")
+      var filename = form.files.file.filename
+      let content = form.files.file.content
+      console.log("看6")
+      await Deno.writeFile(`./images/${filename}`, content);
+      console.log("幽默",filename)
+    }
+    console.log("看7")
+    console.log("看8")
     var user = await ctx.state.session.get('user')
     if (user != null) {
       console.log('user=', user)
-      sqlcmd("INSERT INTO posts (username, title, body,file) VALUES (?, ?, ?,?)", [user.username, post.title, post.body,post.file]);
+      sqlcmd("INSERT INTO posts (username, title, body,file) VALUES (?, ?, ?,?)", [user.username, form.fields.title, form.fields.body,filename]);
     } 
     else {
       ctx.throw(404, 'not login yet!');
     }
     ctx.response.redirect('/');
-  }
+  //}
+
+
 }
 
 async function show(ctx) {
@@ -249,6 +269,18 @@ async function show(ctx) {
 }
 
 
-
+/*async function upload(ctx) {
+  console.log('upload() start')
+  const form = await multiParser(ctx.request.serverRequest)
+  console.log('form=', form)
+  if (form) {
+    console.log(form)
+    var filename = form.files.singleImg.filename
+    let content = form.files.singleImg.content
+    await Deno.writeFile(`./images/${filename}`, content);
+    console.log("幽默",filename)
+    ctx.response.body = await render.newPost();
+  }
+}*/
 console.log('Server run at http://127.0.0.1:8000/login')
 await app.listen({ port: 8000 });
