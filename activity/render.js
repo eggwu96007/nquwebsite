@@ -226,7 +226,7 @@ export function newphoto() {
   <body>
   <h3>Deno http module</h3>
   <form action="/upload" enctype="multipart/form-data" method="post">
-    <div>singleImg: <input type="file" name="singleImg"/></div>
+    <div>singleImg: <input type="file" name="file"/></div>
     <input type="submit" value="Upload" />
   </form>
   </body>
