@@ -137,10 +137,10 @@ export function signupUi(args={}) {
   return layout('Signup',` 
   <h1>Signup</h1>
   <form action="/signup" method="post">
-    <p><input type="text" placeholder="username" name="username"></p>
-    <p><input type="password" placeholder="password" name="password"></p>
-    <p><input type="text" placeholder="email" name="社團名稱"></p>
-    <p><input type="submit" value="Signup"></p>
+    <p><input type="text" placeholder="帳號" name="username" style="width:auto;"></p>
+    <p><input type="password" placeholder="密碼" name="password" style="width:auto;"></p>
+    <p><input type="text" placeholder="社團名稱" name="email" style="width:auto;"></p>
+    <p><input type="submit" value="登入"  ></p>
   </form>
   ${alertScript}
   `
@@ -171,18 +171,48 @@ export function list(posts, user) {
     list.push(`
     <li style="border-color: crimson">
     </li>
-    <li style="border-color: crimson"><h2>${ post.title } -- by ${post.username}<a href="/delpost/${post.id}">刪除貼文</a><a href="/editpost/${post.id}">編輯貼文</a></h2>
+    <li style="border-color: crimson"><h2>${ post.title } -- by ${post.username}and${post.email}<a href="/delpost/${post.id}">刪除貼文</a><a href="/editpost/${post.id}">編輯貼文</a></h2>
     
       <p>${post.body}</p>
       <p>${post.file}</p>
-      <img src="images/${post.file}"/>
+      <img width="500" heigh="700" src="images/${post.file}"/>
       <p><a href="/post/${post.id}">Read post</a></p></li>
     `)
   }
   let content = `
   <body>
   <article>
-  <p style="border: crimson;font-size: 30px; border-top: 100px; ">${(user==null)?'':'歡迎 '+user.username+''}<a href="/post/new">創立貼文</a></p>
+  <p style="border: crimson;font-size: 30px; border-top: 100px; ">${(user==null)?'':'歡迎 '+user.username+'hi'+user.email}<a href="/post/new">創立貼文</a></p>
+  <ul id="posts">
+    ${list.join('\n')}
+  </ul>
+  </article>
+  </body>
+  `
+  return layout('Posts', content)
+}
+
+export function view(posts, user) {
+  console.log('listing: user=', user)
+  let list = []
+  
+  for (let post of posts) {
+    
+    list.push(`
+    <li style="border-color: crimson">
+    </li>
+    <li style="border-color: crimson"><h2>${ post.title } -- by ${post.email}</h2>
+    
+      <p>${post.body}</p>
+      <p>${post.file}</p>
+      <img width="500" heigh="700" src="images/${post.file}"/>
+      <p><a href="/post/${post.id}">Read post</a></p></li>
+    `)
+  }
+  let content = `
+  <body>
+  <article>
+  
   <ul id="posts">
     ${list.join('\n')}
   </ul>
@@ -361,7 +391,7 @@ export function show(post) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" />
   <body>
 
-    <h1>${post.title} -- by ${post.username}</h1>
+    <h1>${post.title} -- by ${post.email}</h1>
     <p>${post.body}</p>
 
     

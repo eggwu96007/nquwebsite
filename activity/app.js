@@ -6,7 +6,7 @@ import { multiParser} from 'https://deno.land/x/multiparser@v2.1.0/mod.ts'
 import { oakCors } from "https://deno.land/x/cors/mod.ts";
 
 const db = new DB("blog.db");
-db.query("CREATE TABLE IF NOT EXISTS posts (id INTEGER PRIMARY KEY AUTOINCREMENT,title TEXT, username TEXT,  body TEXT, file TEXT)");
+db.query("CREATE TABLE IF NOT EXISTS posts (id INTEGER PRIMARY KEY AUTOINCREMENT,title TEXT, username TEXT,  body TEXT, file TEXT,email TEXT)");
 db.query("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT, email TEXT)");
 /*
 const userMap = {
@@ -29,6 +29,7 @@ router.get('/', list)
   .get('/delpost/:id',delpost)
   .get('/editpost/:id',editpostui)
   .post('/:id',editpost)
+  .get('/onlyview',view)
   
 
 const app = new Application();
@@ -66,11 +67,11 @@ function sqlcmd(sql, arg1) {
 
 function postQuery(sql) {
   let list = []
-  for (const [id, username, title, body,file] of sqlcmd(sql)) {
-    list.push({id, username, title, body,file})
+  for (const [id, username, title, body,file,email] of sqlcmd(sql)) {
+    list.push({id, username, title, body,file,email})
     
   }
-  console.log('postQuery: list=', list)
+  console.log('這裡看的到信箱?postQuery: list=', list)
   return list
 }
 
@@ -105,7 +106,7 @@ async function signup(ctx) {
   console.log('dangerous')
   if (body.type === "form") {
     var user = await parseFormBody(body)
-    var dbUsers = userQuery(`SELECT id, username, password, email FROM users WHERE username='${user.username}'`)
+    var dbUsers = userQuery(`SELECT id, username, password ,email FROM users WHERE username='${user.username}'`)
     if (dbUsers.length === 0) {
       sqlcmd("INSERT INTO users (username, password, email) VALUES (?, ?, ?)", [user.username, user.password, user.email]);
       ctx.response.body = render.loginUi({status:'帳號創立成功，請重新登入'})
@@ -125,7 +126,7 @@ async function login(ctx) {
   const body = ctx.request.body()
   if (body.type === "form") {
     var user = await parseFormBody(body)
-    var dbUsers = userQuery(`SELECT id, username, password, email FROM users WHERE username='${user.username}'`) // userMap[user.username]
+    var dbUsers = userQuery(`SELECT id, username,password,email FROM users WHERE username='${user.username}'`) // userMap[user.username]
     var dbUser = dbUsers[0]
     
     console.log('看戲:帳號',dbUser)
@@ -152,13 +153,24 @@ async function logout(ctx) {
 }
 
 async function list(ctx) {
+  
   let orderby = ctx.request.url.searchParams.get('orderby')
   orderby = orderby || 'id'
   let op = ctx.request.url.searchParams.get('op')
   op = op || 'ASC'
-  let posts = postQuery(`SELECT id,username, title, body ,file FROM posts ORDER BY ${orderby} ${op}`)
-  console.log('list:posts=', posts)
+  let posts = postQuery(`SELECT id,username, title, body ,file,email FROM posts ORDER BY ${orderby} ${op}`)
+  console.log('別吵拜託list:posts=', posts)
   ctx.response.body = await render.list(posts, await ctx.state.session.get('user'));
+}
+
+async function view(ctx) {
+    let orderby = ctx.request.url.searchParams.get('orderby')
+    orderby = orderby || 'id'
+    let op = ctx.request.url.searchParams.get('op')
+    op = op || 'ASC'
+    let posts = postQuery(`SELECT id,username, title, body ,file,email FROM posts ORDER BY ${orderby} ${op}`)
+    console.log('list:posts=', posts)
+  ctx.response.body = await render.view(posts, await ctx.state.session.get('user'));
 }
 
 
@@ -184,7 +196,7 @@ async function delpost(ctx) {
 async function editpostui(ctx) {
   const pid = ctx.params.id;
   console.log('要確定餒也不確定',pid)
-  let posts = postQuery(`SELECT id, username, title, body,file FROM posts WHERE id=${pid}`)
+  let posts = postQuery(`SELECT id, username,title, body,file ,email FROM posts WHERE id=${pid}`)
   let post = posts[0]
   console.log('show:post=', post)
   if (!post) ctx.throw(404, 'invalid post id');
@@ -231,7 +243,8 @@ async function create(ctx) {
     var user = await ctx.state.session.get('user')
     if (user != null) {
       console.log('user=', user)
-      sqlcmd("INSERT INTO posts (username, title, body,file) VALUES (?, ?, ?,?)", [user.username, post.title, post.body,post.file]);
+      console.log('回去啦爽',user.email)
+      sqlcmd("INSERT INTO posts (username, title, body,file,email) VALUES (?, ?, ?,?,?)", [user.username, post.title, post.body,post.file,user.email]);
     } 
     else {
       ctx.throw(404, 'not login yet!');
@@ -242,7 +255,7 @@ async function create(ctx) {
 
 async function show(ctx) {
   const pid = ctx.params.id;
-  let posts = postQuery(`SELECT id, username, title, body,file FROM posts WHERE id=${pid}`)
+  let posts = postQuery(`SELECT id, username, title, body,file,email FROM posts WHERE id=${pid}`)
   let post = posts[0]
   if (!post) ctx.throw(404, 'invalid post id');
   ctx.response.body = await render.show(post);
