@@ -234,7 +234,7 @@ export function newPost() {
     <form action="/post" enctype="multipart/form-data" method="post" >
       <p><input type="text" placeholder="Title" name="title"></p>
       <p><textarea placeholder="Contents" name="body"></textarea></p>
-      <div>singleImg: <input type="file" name="file"/></div>
+      <div>活動海報: <input type="file" name="file"/></div>
       <p><input type="submit" value="Create"></p>
      
     </form>
@@ -247,25 +247,7 @@ export function newPost() {
 }
 
 
-export function newphoto() {
-  
-  return layout('New photo',
- 
-  `    
-  <html>
-  <body>
-  <h3>Deno http module</h3>
-  <form action="/upload" enctype="multipart/form-data" method="post">
-    <div>singleImg: <input type="file" name="file"/></div>
-    <input type="submit" value="Upload" />
-  </form>
-  </body>
-  </html>
 
-
-  `
-  )
-}
 
 export function editpostui(post) {
   return layout(post.title, `
@@ -273,13 +255,13 @@ export function editpostui(post) {
 <body>
   <h1>編輯中${post.id}</h1>
   <p>Create a new post.</p>
-  <form action="/${post.id}" method="post">
+  <form action="/${post.id}" enctype="multipart/form-data" method="post">
   <p><input type="text" placeholder="Title" name="title" value="${post.title}"></p>
   <p><textarea placeholder="Contents" name="body" rows="6" cols="40">${post.body}</textarea></p>
     <p><input type="submit" value="Create"></p>
     <img src="" alt="" name="image">
-  <input type="file" name="file" id="imgfile" onchange="loadImage()">
-  <input type='button' id='btnLoad' value='Upload' onclick="upload()" />
+  <input type="file" name="file" id="imgfile">
+  <input type='button' id='btnLoad' value='Upload'  />
   <canvas id="canvas"></canvas>
   </form>
   

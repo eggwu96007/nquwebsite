@@ -1,4 +1,4 @@
-import { Application, Router,send } from "https://deno.land/x/oak/mod.ts";
+import { Application, Router,send } from "https://deno.land/x/oak@v6.5.0/mod.ts";
 import * as render from './render.js'
 import { DB } from "https://deno.land/x/sqlite/mod.ts";
 import { Session } from "https://deno.land/x/session@1.1.0/mod.ts";
@@ -237,32 +237,23 @@ async function editpost(ctx) {
 
 
 async function create(ctx) {
-  console.log("看1")
   const body = ctx.request.body()
-  console.log("感覺有橘了",body)
-  console.log("看2")
   const form = await multiParser(ctx.request.serverRequest)
-  console.log(form)
- // if (body.type === "form") {
-    console.log("看3")
-    
-    console.log("看4")
-    console.log(form)
     if (form) {
-      console.log("看5")
       var filename = form.files.file.filename
       let content = form.files.file.content
-      console.log("看6")
       await Deno.writeFile(`./images/${filename}`, content);
-      console.log("幽默",filename)
+
     }
-    console.log("看7")
-    console.log("看8")
     var user = await ctx.state.session.get('user')
     if (user != null) {
       console.log('user=', user)
+<<<<<<< HEAD
       console.log('回去啦爽',user.email)
       sqlcmd("INSERT INTO posts (username, title, body,file,email) VALUES (?, ?, ?,?,?)", [user.username, post.title, post.body,post.file,user.email]);
+=======
+      sqlcmd("INSERT INTO posts (username, title, body,file) VALUES (?, ?, ?,?)", [user.username, form.fields.title, form.fields.body,filename]);
+>>>>>>> 9626196e23a54eae446cc9e8cfc7dfd44c8eaa28
     } 
     else {
       ctx.throw(404, 'not login yet!');
