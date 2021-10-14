@@ -261,12 +261,8 @@ async function create(ctx) {
     var user = await ctx.state.session.get('user')
     if (user != null) {
       console.log('user=', user)
-<<<<<<< HEAD
       console.log('回去啦爽',user.email)
       sqlcmd("INSERT INTO posts (username, title, body,file,email) VALUES (?, ?, ?,?,?)", [user.username, post.title, post.body,post.file,user.email]);
-=======
-      sqlcmd("INSERT INTO posts (username, title, body,file) VALUES (?, ?, ?,?)", [user.username, form.fields.title, form.fields.body,filename]);
->>>>>>> 9626196e23a54eae446cc9e8cfc7dfd44c8eaa28
     } 
     else {
       ctx.throw(404, 'not login yet!');
